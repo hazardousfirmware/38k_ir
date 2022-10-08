@@ -3,11 +3,9 @@
 
 uint8_t swap_bit_order(uint8_t value);
 
-static void do_nothing(uint8_t address, uint8_t command)
+void necdecoder_handle_remote_button(uint8_t address, uint8_t command) __attribute__((weak))
 {
 }
-
-static void (*necdecoder_handle_remote_button)(uint8_t, uint8_t) = do_nothing;
 
 // NEC Infra-red remote protocol
 // https://techdocs.altium.com/display/FPGA/NEC+Infrared+Transmission+Protocol
