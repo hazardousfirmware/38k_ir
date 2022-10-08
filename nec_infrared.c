@@ -3,8 +3,11 @@
 
 uint8_t swap_bit_order(uint8_t value);
 
-static const struct nec_infrared_command_t *registered_actions = NULL;
-static int registered_actions_count = 0;
+static void do_nothing(uint8_t address, uint8_t command)
+{
+}
+
+static void (*necdecoder_handle_remote_button)(uint8_t, uint8_t) = do_nothing;
 
 // NEC Infra-red remote protocol
 // https://techdocs.altium.com/display/FPGA/NEC+Infrared+Transmission+Protocol
@@ -181,27 +184,9 @@ void necdecoder_decode_falling_edge(uint32_t current_timestamp)
     }
 }
 
-void necdecoder_handle_remote_button(uint8_t address, uint8_t command)
+inline void necdecoder_register_button_handler(void (*func)(uint8_t, uint8_t))
 {
-    address = swap_bit_order(address);
-    command = swap_bit_order(command);
-
-    for (int i = 0; i < registered_actions_count; i++)
-    {
-        struct nec_infrared_command_t ir_command = registered_actions[i];
-
-        if (ir_command.address == address && ir_command.command == command)
-        {
-            ir_command.action();
-            break;
-        }
-    }
-}
-
-inline void necdecoder_register_button_actions(const struct nec_infrared_command_t *command_list, int command_count)
-{
-    registered_actions = command_list;
-    registered_actions_count = command_count;
+    necdecoder_handle_remote_button = func;
 }
 
 inline uint8_t swap_bit_order(uint8_t value)
