@@ -3,7 +3,7 @@
 
 uint8_t swap_bit_order(uint8_t value);
 
-void necdecoder_handle_remote_button(uint8_t address, uint8_t command) __attribute__((weak))
+void __attribute__((weak)) necdecoder_handle_remote_button(uint8_t address, uint8_t command) 
 {
 }
 
@@ -180,11 +180,6 @@ void necdecoder_decode_falling_edge(uint32_t current_timestamp)
         state = STATE_IDLE;
         last_timestamp = current_timestamp;
     }
-}
-
-inline void necdecoder_register_button_handler(void (*func)(uint8_t, uint8_t))
-{
-    necdecoder_handle_remote_button = func;
 }
 
 inline uint8_t swap_bit_order(uint8_t value)
