@@ -1,4 +1,4 @@
-#include "nec_infrared.h"
+#include "nec_rx.h"
 #include <stddef.h>
 
 uint8_t swap_bit_order(uint8_t value);
