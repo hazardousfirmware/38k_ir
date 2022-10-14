@@ -22,8 +22,8 @@ off for 73ms
 #define BIT_LONG 1200
 #define BIT_SHORT 440
 
-// minimum time between frames in microseconds
-#define DELAY_BETWEEN_FRAMES 73000
+// minimum time between frames in milliseconds
+#define DELAY_BETWEEN_FRAMES 73
 
 // Default function for unregistered pointers
 static void do_nothing(uint32_t val)
@@ -32,7 +32,8 @@ static void do_nothing(uint32_t val)
 
 static void (*pwm_on)(void) = (void(*)(void))do_nothing;
 static void (*pwm_off)(void) = (void(*)(void))do_nothing;
-static void (*internal_delay_us)(uint32_t) = do_nothing;
+static void (*internal_delay_us)(unsigned int) = (void(*)(unsigned int))do_nothing;
+static void (*internal_delay_ms)(uint32_t) = do_nothing;
 
 static inline void write_bit(uint8_t bit)
 {
@@ -55,11 +56,14 @@ static inline void write_bit(uint8_t bit)
 }
 
 
-void panasonic_register_functions(void (*pwm_on_function)(void), void (*pwm_off_function)(void), void (*delay_us_function)(uint32_t))
+void panasonic_register_functions(void (*pwm_on_function)(void), void (*pwm_off_function)(void), 
+                                  void (*delay_us_function)(unsigned int),
+                                  void (*delay_ms_function)(uint32_t))
 {
     pwm_on = pwm_on_function;
     pwm_off = pwm_off_function;
     internal_delay_us = delay_us_function;
+    internal_delay_ms = delay_ms_function;
 }
 
 void send_panasonic_ircode(uint16_t code)
@@ -90,5 +94,5 @@ void send_panasonic_ircode(uint16_t code)
 
     write_bit(1);
 
-   internal_delay_us(DELAY_BETWEEN_FRAMES);
+    internal_delay_ms(DELAY_BETWEEN_FRAMES);
 }
