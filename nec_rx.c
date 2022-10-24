@@ -58,7 +58,7 @@ void necdecoder_decode_falling_edge(uint32_t current_timestamp)
         bits = 0x0;
         count = 0;
 
-        if (sinceLast >= 13400 && sinceLast <= 13700)
+        if (sinceLast >= 13300 && sinceLast <= 13700)
         {
             // preamble detected, next interrupt should be data bits
             state = STATE_DATA;
