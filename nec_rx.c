@@ -3,7 +3,7 @@
 
 uint8_t swap_bit_order(uint8_t value);
 
-void __attribute__((weak)) necdecoder_handle_remote_button(uint8_t address, uint8_t command) 
+void __attribute__((weak)) necdecoder_handle_remote_button(uint8_t address, uint8_t command, bool repeat) 
 {
 }
 
@@ -103,7 +103,7 @@ void necdecoder_decode_falling_edge(uint32_t current_timestamp)
                 // successfully verified and decoded the remote button
                 last_address = addr;
                 last_command = comm;
-                necdecoder_handle_remote_button(addr, comm);
+                necdecoder_handle_remote_button(addr, comm, false);
 
                 // Lock the decoder until the repeat comes in
                 state = STATE_LOCK1;
@@ -153,7 +153,7 @@ void necdecoder_decode_falling_edge(uint32_t current_timestamp)
             last_timestamp = current_timestamp;
 
             // definitely a repeat command
-            necdecoder_handle_remote_button(last_address, last_command);
+            necdecoder_handle_remote_button(last_address, last_command, true);
         }
     }
     else if (state == STATE_LOCK2)
@@ -182,7 +182,7 @@ void necdecoder_decode_falling_edge(uint32_t current_timestamp)
     }
 }
 
-inline uint8_t swap_bit_order(uint8_t value)
+uint8_t swap_bit_order(uint8_t value)
 {
     value = (value & 0xF0) >> 4 | (value & 0x0F) << 4;
     value = (value & 0xCC) >> 2 | (value & 0x33) << 2;
