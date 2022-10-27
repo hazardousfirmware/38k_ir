@@ -1,13 +1,11 @@
 #include "panasonic_tx.h"
 
-#define PANASONIC_IR_CONSTANT 0x01004004
-
 /*
 ===start===
 on for 3600us
 off for 1200 us
 
-===data=== (32bit constant 0x01004004 + 16 bit code + 1 bit)
+===data=== (32bit identifier + 16 bit code)
 state 0 = (720 - 880)us, low for 480us, high for 240us (440)
 state 1 = (1680-1760)us, low for 1200us, high for (480 to 560)us
 
@@ -66,7 +64,7 @@ void panasonic_register_functions(void (*pwm_on_function)(void), void (*pwm_off_
     internal_delay_ms = delay_ms_function;
 }
 
-void send_panasonic_ircode(uint16_t code)
+void send_panasonic_ircode(uint32_t device, uint16_t code)
 {
     uint8_t bit = 0;
 
@@ -76,23 +74,21 @@ void send_panasonic_ircode(uint16_t code)
     pwm_off();
     internal_delay_us(PREAMBLE_SHORT);
 
-    uint32_t ir_preamble = PANASONIC_IR_CONSTANT;
-    while (ir_preamble != 0)
+    // Device identifier
+    for (int i = 0; i < 32; i++)
     {
-        bit = (uint8_t)(ir_preamble & 0x01);
+        bit = (uint8_t)(device & 0x01);
         write_bit(bit);
-        ir_preamble >>= 1;
+        device >>= 1;
     }
 
-    // The actual data
-    while (code != 0)
+    // Command
+    for (int i = 0; i < 16; i++)
     {
         bit = (uint8_t)(code & 0x01);
         write_bit(bit);
         code >>= 1;
     }
-
-    write_bit(1);
 
     internal_delay_ms(DELAY_BETWEEN_FRAMES);
 }

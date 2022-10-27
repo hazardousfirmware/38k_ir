@@ -4,6 +4,6 @@
 #include <stdint.h>
 
 void panasonic_decode_falling_edge(uint32_t current_timestamp);
-void panasonic_button_callback(uint16_t command);
+void panasonic_button_callback(uint32_t identifier, uint16_t command);
 
 #endif // !__PANASONIC_RX_H__

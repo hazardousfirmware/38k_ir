@@ -1,6 +1,6 @@
 #include "panasonic_rx.h"
 
-void __attribute__((weak)) panasonic_button_callback(uint16_t command)
+void __attribute__((weak)) panasonic_button_callback(uint32_t identifier, uint16_t command)
 {
 }
 
@@ -9,7 +9,7 @@ void __attribute__((weak)) panasonic_button_callback(uint16_t command)
 on for 3600us
 off for 1200 us
 
-===data=== (32bit constant 0x01004004 + 16 bit code + 1 bit)
+===data=== (32bit identifier + 16 bit code)
 state 0 = (720 - 880)us, low for 480us, high for 240us (440)
 state 1 = (1680-1760)us, low for 1200us, high for (480 to 560)us
 
@@ -22,11 +22,9 @@ typedef enum
     STATE_IDLE,
     STATE_MAGIC,
     STATE_DATA,
-    STATE_END,
     STATE_LOCK
 } decoder_state_machine_t;
 
-#define PROTOCOL_MAGIC_NUMBER 0x01004004
 
 void panasonic_decode_falling_edge(uint32_t current_timestamp)
 {
@@ -35,15 +33,23 @@ void panasonic_decode_falling_edge(uint32_t current_timestamp)
     static uint32_t last_timestamp = 0;
     const uint32_t sinceLast = current_timestamp - last_timestamp;
 
-    static uint32_t bits = 0;
+    static uint16_t cmd = 0;
+    static uint32_t id = 0;
     static int count = 0;
+
+    if (sinceLast < 100)
+    {
+        // Spurious, ignore
+        return;
+    }
 
     if (state == STATE_IDLE)
     {
-        bits = 0;
+        cmd = 0;
+        id = 0;
         count = 0;
 
-        if (sinceLast >= 4400 && sinceLast <= 5200) // ~4800us
+        if (sinceLast >= 4800 && sinceLast <= 5300) // ~4800us
         {
             state = STATE_MAGIC;
         }
@@ -52,21 +58,18 @@ void panasonic_decode_falling_edge(uint32_t current_timestamp)
     }
     else if (state == STATE_MAGIC)
     {
-        // Sample 32 bits and check for magic number identifying the protocol
-
+        // Sample 32 bits and check for number identifying the device
         if (sinceLast > 700 && sinceLast < 900)
         {
             // bit 0 detected
-            bits <<= 1;
-            bits &= ~(1 << 0);
             count++;
+            id &= ~(1 << count);
         }
         else if (sinceLast > 1600 && sinceLast < 1820)
         {
             // bit 1 detected
-            bits <<= 1;
-            bits |= (1 << 0);
             count++;
+            id |= (1 << count);
         }
         else
         {
@@ -76,8 +79,7 @@ void panasonic_decode_falling_edge(uint32_t current_timestamp)
 
         if (count == 32)
         {
-            state = (bits == PROTOCOL_MAGIC_NUMBER) ? STATE_DATA : STATE_IDLE;
-            bits = 0;
+            state = STATE_DATA;
             count = 0;
         }
 
@@ -89,16 +91,14 @@ void panasonic_decode_falling_edge(uint32_t current_timestamp)
         if (sinceLast > 700 && sinceLast < 900)
         {
             // bit 0 detected
-            bits <<= 1;
-            bits &= ~(1 << 0);
             count++;
+            cmd &= ~(1 << count);
         }
         else if (sinceLast > 1600 && sinceLast < 1820)
         {
             // bit 1 detected
-            bits <<= 1;
-            bits |= (1 << 0);
             count++;
+            cmd |= (1 << count);
         }
         else
         {
@@ -108,32 +108,20 @@ void panasonic_decode_falling_edge(uint32_t current_timestamp)
 
         if (count == 16)
         {
-            state = STATE_END;
+            // last bit detected
+            panasonic_button_callback(id, cmd);
+            state = STATE_LOCK;
             count = 0;
+            cmd = 0;
+            id = 0;
         }
 
-        last_timestamp = current_timestamp;
-    }
-    else if (state == STATE_END)
-    {
-        if (sinceLast > 1600 && sinceLast < 1820)
-        {
-            // end bit detected
-            panasonic_button_callback(bits);
-            state = STATE_LOCK;
-        }
-        else
-        {
-            state = STATE_IDLE;
-        }
-        bits = 0;
-        count = 0;
         last_timestamp = current_timestamp;
     }
     else if (state == STATE_LOCK)
     {
         // block from handling falling edge for at least 73us
-        if (sinceLast > 72500)
+        if (sinceLast > 73000)
         {
             state = STATE_IDLE;
             last_timestamp = current_timestamp;
