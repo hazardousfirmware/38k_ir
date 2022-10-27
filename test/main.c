@@ -2,9 +2,9 @@
 #include <stdint.h>
 #include "panasonic_rx.h"
 
-void panasonic_button_callback(uint32_t identifier, uint16_t command)
+void panasonic_button_callback(uint16_t identifier, uint16_t command)
 {
-    printf("callback, identifier=%08x, command=0x%04x\n", identifier, command);
+    printf("callback, identifier=0x%04x, command=0x%04x\n", identifier, command);
 }
 
 

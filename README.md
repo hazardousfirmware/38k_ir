@@ -5,8 +5,10 @@ Compile into any embedded target to decode Infrared protocols.
 
 Measures the time difference between falling edge interrupts to decode a command/address value from an IR remote control button press
 
+NOTE: NEC Protocol is the most common and used by most vendors
+
 ## Supported protocols
-- NEC (Decode only, encode coming soon)
+- NEC (Encode and Decode)
 - Panasonic (Encode and Decode)
 
 ## Hardware prerequisites
@@ -26,6 +28,10 @@ Measures the time difference between falling edge interrupts to decode a command
     - By default it is a *weak* function that does nothing and returns
 1. call `necdecoder_decode_falling_edge(uint32_t current_timestamp)` with timestamp from systick counter for every falling edge interrupt on the IR sensor pin
 
+### Encoding NEC protocol
+1. call `nec_register_functions` and provide pointers to hardware specific functions for enabling PWM, disabling PWM, microsecond delay
+1. call `send_nec_ircode` with 16 bit address and command to transmit
+
 ### Decoding Panasonic protocol
 1. implement function `void panasonic_button_callback(uint16_t command)` to handle pressed button events
     - By default it is a *weak* function that does nothing and returns
@@ -33,7 +39,7 @@ Measures the time difference between falling edge interrupts to decode a command
 
 ### Encoding Panasonic protocol
 1. call `panasonic_register_functions` and provide pointers to hardware specific functions for enabling PWM, disabling PWM, microsecond delay
-1. call `send_panasonic_ircode` with 16 bit code to transmit
+1. call `send_panasonic_ircode` with 16 bit id and code to transmit
 
 ## Gotchas
 - The decoding code might be slow in an IRQ, use a queue or ring buffer to hold interrupt events

@@ -5,7 +5,7 @@
 on for 3600us
 off for 1200 us
 
-===data=== (32bit identifier + 16 bit code)
+===data=== (16 bit identifier + 0x4004 + 16 bit code)
 state 0 = (720 - 880)us, low for 480us, high for 240us (440)
 state 1 = (1680-1760)us, low for 1200us, high for (480 to 560)us
 
@@ -22,6 +22,8 @@ off for 73ms
 
 // minimum time between frames in milliseconds
 #define DELAY_BETWEEN_FRAMES 73
+
+#define MIDDLE_CONSTANT 0x4004
 
 // Default function for unregistered pointers
 static void do_nothing(uint32_t val)
@@ -64,9 +66,10 @@ void panasonic_register_functions(void (*pwm_on_function)(void), void (*pwm_off_
     internal_delay_ms = delay_ms_function;
 }
 
-void send_panasonic_ircode(uint32_t device, uint16_t code)
+void send_panasonic_ircode(uint16_t device, uint16_t code)
 {
     uint8_t bit = 0;
+    int i = 0;
 
     // Preamble
     pwm_on();
@@ -75,7 +78,16 @@ void send_panasonic_ircode(uint32_t device, uint16_t code)
     internal_delay_us(PREAMBLE_SHORT);
 
     // Device identifier
-    for (int i = 0; i < 32; i++)
+    for (i = 0; i < 16; i++)
+    {
+        bit = (uint8_t)(device & 0x01);
+        write_bit(bit);
+        device >>= 1;
+    }
+
+    // Constant value
+    device = MIDDLE_CONSTANT;
+    for (i = 0; i < 16; i++)
     {
         bit = (uint8_t)(device & 0x01);
         write_bit(bit);
@@ -83,7 +95,7 @@ void send_panasonic_ircode(uint32_t device, uint16_t code)
     }
 
     // Command
-    for (int i = 0; i < 16; i++)
+    for (i = 0; i < 16; i++)
     {
         bit = (uint8_t)(code & 0x01);
         write_bit(bit);
