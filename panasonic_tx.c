@@ -23,7 +23,7 @@ off for 73ms
 // minimum time between frames in milliseconds
 #define DELAY_BETWEEN_FRAMES 73
 
-#define MIDDLE_CONSTANT 0x4004
+#define MIDDLE_CONSTANT 0x2002
 
 // Default function for unregistered pointers
 static void do_nothing(uint32_t val)
@@ -40,23 +40,33 @@ static inline void write_bit(uint8_t bit)
     if (bit)
     {
         // the bit is set, encode a 1 symbol
-        pwm_off();
-        internal_delay_us(BIT_LONG);
         pwm_on();
+        internal_delay_us(BIT_LONG);
+        pwm_off();
         internal_delay_us(BIT_SHORT);
     }
     else
     {
         // the bit is not set, encode a 0 symbol
-        pwm_off();
-        internal_delay_us(BIT_SHORT);
         pwm_on();
+        internal_delay_us(BIT_SHORT);
+        pwm_off();
         internal_delay_us(BIT_SHORT);
     }
 }
 
+static inline void write_word(uint16_t val)
+{
+    uint8_t bit = 0;
+    for (int i = 0; i < 16; i++)
+    {
+        bit = (uint8_t)(val & 0x01);
+        write_bit(bit);
+        val >>= 1;
+    }
+}
 
-void panasonic_register_functions(void (*pwm_on_function)(void), void (*pwm_off_function)(void), 
+void panasonic_register_functions(void (*pwm_on_function)(void), void (*pwm_off_function)(void),
                                   void (*delay_us_function)(unsigned int),
                                   void (*delay_ms_function)(uint32_t))
 {
@@ -68,39 +78,16 @@ void panasonic_register_functions(void (*pwm_on_function)(void), void (*pwm_off_
 
 void send_panasonic_ircode(uint16_t device, uint16_t code)
 {
-    uint8_t bit = 0;
-    int i = 0;
-
     // Preamble
     pwm_on();
     internal_delay_us(PREAMBLE_LONG);
     pwm_off();
     internal_delay_us(PREAMBLE_SHORT);
 
-    // Device identifier
-    for (i = 0; i < 16; i++)
-    {
-        bit = (uint8_t)(device & 0x01);
-        write_bit(bit);
-        device >>= 1;
-    }
+    write_word(MIDDLE_CONSTANT);
+    write_word(device);
+    write_word(code);
 
-    // Constant value
-    device = MIDDLE_CONSTANT;
-    for (i = 0; i < 16; i++)
-    {
-        bit = (uint8_t)(device & 0x01);
-        write_bit(bit);
-        device >>= 1;
-    }
-
-    // Command
-    for (i = 0; i < 16; i++)
-    {
-        bit = (uint8_t)(code & 0x01);
-        write_bit(bit);
-        code >>= 1;
-    }
-
+    pwm_off();
     internal_delay_ms(DELAY_BETWEEN_FRAMES);
 }

@@ -11,7 +11,7 @@ static void (*pwm_off)(void) = (void(*)(void))do_nothing;
 static void (*internal_delay_us)(unsigned int) = (void(*)(unsigned int))do_nothing;
 
 
-void nec_register_functions(void (*pwm_on_function)(void), void (*pwm_off_function)(void), 
+void nec_register_functions(void (*pwm_on_function)(void), void (*pwm_off_function)(void),
                                   void (*delay_us_function)(unsigned int))
 {
     pwm_on = pwm_on_function;
@@ -21,9 +21,9 @@ void nec_register_functions(void (*pwm_on_function)(void), void (*pwm_off_functi
 
 static inline void write_bit(uint8_t bit)
 {
-    if (bit)
+    if (!bit)
     {
-        // the bit is set, encode a 1 symbol
+        // the bit is not set, encode a 0 symbol
         pwm_on();
         internal_delay_us(562);
         pwm_off();
@@ -31,7 +31,7 @@ static inline void write_bit(uint8_t bit)
     }
     else
     {
-        // the bit is not set, encode a 0 symbol
+        // the bit is set, encode a 1 symbol
         pwm_on();
         internal_delay_us(562);
         pwm_off();
@@ -44,9 +44,9 @@ static inline void write_octet(uint8_t value)
     uint8_t bit = 0;
     for (int i = 0; i < 8; i++)
     {
-        bit = (uint8_t)(value & 0x01);
+        bit = (uint8_t)(value & 0x80);
         write_bit(bit);
-        value >>= 1;
+        value <<= 1;
     }
 }
 
@@ -65,5 +65,6 @@ void send_nec_ircode(uint8_t address, uint8_t cmd)
     write_octet(cmd);
     write_octet(~cmd);
 
+    pwm_off();
     internal_delay_us(40000);
 }

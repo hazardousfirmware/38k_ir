@@ -3,10 +3,19 @@
 
 #include <stdint.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 void send_panasonic_ircode(uint16_t device, uint16_t code);
 void panasonic_register_functions(void (*pwm_on_function)(void),
                                   void (*pwm_off_function)(void),
                                   void (*delay_us_function)(unsigned int),
                                   void (*internal_delay_ms)(uint32_t));
+
+
+#ifdef __cplusplus
+     }
+#endif
 
 #endif //!__PANASONIC_TX_H__

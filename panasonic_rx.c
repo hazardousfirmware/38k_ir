@@ -17,16 +17,16 @@ state 1 = (1680-1760)us, low for 1200us, high for (480 to 560)us
 off for 73ms
 */
 
-typedef enum 
+typedef enum
 {
     STATE_IDLE,
-    STATE_ADDR,
     STATE_MAGIC,
+    STATE_ADDR,
     STATE_DATA,
     STATE_LOCK
 } decoder_state_machine_t;
 
-#define MIDDLE_CONSTANT (uint16_t)0x4004
+#define MIDDLE_CONSTANT (uint16_t)0x2002
 
 void panasonic_decode_falling_edge(uint32_t current_timestamp)
 {
@@ -55,23 +55,23 @@ void panasonic_decode_falling_edge(uint32_t current_timestamp)
         {
             state = STATE_MAGIC;
         }
-        
+
         last_timestamp = current_timestamp;
     }
     else if (state == STATE_MAGIC)
     {
-        // Sample 16bits to decode magic number 0x4004
+        // Sample 16bits to decode magic number 0x2002
         if (sinceLast > 700 && sinceLast < 900)
         {
             // bit 0 detected
-            count++;
             cmd &= ~(1 << count);
+            count++;
         }
         else if (sinceLast > 1600 && sinceLast < 1820)
         {
             // bit 1 detected
-            count++;
             cmd |= (1 << count);
+            count++;
         }
         else
         {
@@ -95,14 +95,14 @@ void panasonic_decode_falling_edge(uint32_t current_timestamp)
         if (sinceLast > 700 && sinceLast < 900)
         {
             // bit 0 detected
-            count++;
             id &= ~(1 << count);
+            count++;
         }
         else if (sinceLast > 1600 && sinceLast < 1820)
         {
             // bit 1 detected
-            count++;
             id |= (1 << count);
+            count++;
         }
         else
         {
@@ -124,14 +124,14 @@ void panasonic_decode_falling_edge(uint32_t current_timestamp)
         if (sinceLast > 700 && sinceLast < 900)
         {
             // bit 0 detected
-            count++;
             cmd &= ~(1 << count);
+            count++;
         }
         else if (sinceLast > 1600 && sinceLast < 1820)
         {
             // bit 1 detected
-            count++;
             cmd |= (1 << count);
+            count++;
         }
         else
         {

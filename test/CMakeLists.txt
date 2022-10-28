@@ -6,7 +6,15 @@ include_directories(
     ../
 )
 
-add_executable(rxtest
+add_executable(test
+    main.cpp
     ../panasonic_rx.c
-    main.c
+    ../panasonic_tx.c
+    ../nec_rx.c
+    ../nec_tx.c
+)
+
+add_executable(test2
+    test.c
+    ../panasonic_rx.c
 )
