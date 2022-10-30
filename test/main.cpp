@@ -65,8 +65,8 @@ int main()
     reset();
     panasonic_register_functions(pwm_on1, pwm_off1, fake_delay, fake_delay2);
 
-    uint16_t expect_id = 0x00b0;
-    uint16_t expect_cmd = 0x3282;
+    uint16_t expect_id = 0x0080; // panasonic TV power button
+    uint16_t expect_cmd = 0xbd3d;
 
     send_panasonic_ircode(expect_id, expect_cmd);
 

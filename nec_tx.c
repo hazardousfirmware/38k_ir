@@ -44,9 +44,9 @@ static inline void write_octet(uint8_t value)
     uint8_t bit = 0;
     for (int i = 0; i < 8; i++)
     {
-        bit = (uint8_t)(value & 0x80);
+        bit = (uint8_t)(value & 0x01);
         write_bit(bit);
-        value <<= 1;
+        value >>= 1;
     }
 }
 

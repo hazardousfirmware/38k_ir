@@ -42,7 +42,6 @@ void necdecoder_decode_falling_edge(uint32_t current_timestamp)
     static uint32_t bits = 0;
     static int count = 0;
 
-
     static uint8_t last_address = 0;
     static uint8_t last_command = 0;
 
@@ -73,15 +72,13 @@ void necdecoder_decode_falling_edge(uint32_t current_timestamp)
         if (sinceLast > 1000 && sinceLast < 1500)
         {
             // bit 0 detected
-            bits <<= 1;
-            bits &= ~(1 << 0);
+            bits &= ~(1lu << count);
             count++;
         }
         else if (sinceLast > 2000 && sinceLast < 2500)
         {
             // bit 1 detected
-            bits <<= 1;
-            bits |= (1 << 0);
+            bits |= (1lu << count);
             count++;
         }
         else
@@ -93,10 +90,10 @@ void necdecoder_decode_falling_edge(uint32_t current_timestamp)
         if (count == 32)
         {
             // All bits received
-            const uint8_t addr = (bits >> 24);
-            const uint8_t addr_i = (bits >> 16);
-            const uint8_t comm = (bits >> 8);
-            const uint8_t comm_i = (uint8_t)(bits);
+            const uint8_t comm_i = (bits >> 24);
+            const uint8_t comm = (bits >> 16);
+            const uint8_t addr_i = (bits >> 8);
+            const uint8_t addr = (uint8_t)(bits);
 
             if (addr == (uint8_t)~addr_i && comm == (uint8_t)~comm_i)
             {
@@ -182,11 +179,3 @@ void necdecoder_decode_falling_edge(uint32_t current_timestamp)
     }
 }
 
-uint8_t swap_bit_order(uint8_t value)
-{
-    value = (value & 0xF0) >> 4 | (value & 0x0F) << 4;
-    value = (value & 0xCC) >> 2 | (value & 0x33) << 2;
-    value = (value & 0xAA) >> 1 | (value & 0x55) << 1;
-
-    return value;
-}
