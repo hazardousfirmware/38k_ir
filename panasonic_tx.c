@@ -1,13 +1,15 @@
 #include "panasonic_tx.h"
 
 /*
+The Protocol: modified manchester encoding, modulated onto 38KHz carrier
+
 ===start===
 on for 3600us
-off for 1200 us
+off for 1200us
 
-===data=== (16 bit identifier + 0x4004 + 16 bit code)
-state 0 = (720 - 880)us, low for 480us, high for 240us (440)
-state 1 = (1680-1760)us, low for 1200us, high for (480 to 560)us
+===data=== (16 bit identifier + 0x2002 + 16 bit code)
+bit 0 = low for ~440us + high for ~440us
+bit 1 = low for ~1200us + high for ~480us
 
 === end / between frames ===
 off for 73ms
@@ -57,11 +59,9 @@ static inline void write_bit(uint8_t bit)
 
 static inline void write_word(uint16_t val)
 {
-    uint8_t bit = 0;
     for (int i = 0; i < 16; i++)
     {
-        bit = (uint8_t)(val & 0x01);
-        write_bit(bit);
+        write_bit(val & 0x01);
         val >>= 1;
     }
 }
@@ -76,17 +76,18 @@ void panasonic_register_functions(void (*pwm_on_function)(void), void (*pwm_off_
     internal_delay_ms = delay_ms_function;
 }
 
-void send_panasonic_ircode(uint16_t device, uint16_t code)
+void send_panasonic_ircode(uint16_t id, uint16_t cmd)
 {
-    // Preamble
+    // AGC pulse
     pwm_on();
     internal_delay_us(PREAMBLE_LONG);
     pwm_off();
     internal_delay_us(PREAMBLE_SHORT);
 
+    // Data
     write_word(MIDDLE_CONSTANT);
-    write_word(device);
-    write_word(code);
+    write_word(id);
+    write_word(cmd);
 
     pwm_off();
     internal_delay_ms(DELAY_BETWEEN_FRAMES);

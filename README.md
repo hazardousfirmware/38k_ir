@@ -8,7 +8,7 @@ Measures the time difference between falling edge interrupts to decode a command
 NOTE: NEC Protocol is the most common and used by most vendors
 
 ## Supported protocols
-- NEC (Encode and Decode)
+- NEC (standard 8 bit and extended 16 bit address) (Encode and Decode)
 - Panasonic (Encode and Decode)
 
 ## Hardware prerequisites
@@ -26,6 +26,7 @@ NOTE: NEC Protocol is the most common and used by most vendors
 ### Decoding NEC protocol
 1. implement function `void necdecoder_handle_remote_button(uint8_t address, uint8_t command)` to handle pressed button events
     - By default it is a *weak* function that does nothing and returns
+1. Optionally implement function `void necdecoder_handle_remote_button_ext(uint16_t address, uint8_t command)` to handle pressed button events for extended variant
 1. call `necdecoder_decode_falling_edge(uint32_t current_timestamp)` with timestamp from systick counter for every falling edge interrupt on the IR sensor pin
 
 ### Encoding NEC protocol

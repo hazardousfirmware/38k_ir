@@ -9,7 +9,9 @@ extern "C" {
 #endif
 
 void necdecoder_decode_falling_edge(uint32_t current_timestamp);
-void necdecoder_handle_remote_button(uint8_t address, uint8_t command, bool repeat);
+
+void nec_button_callback(uint8_t address, uint8_t command, bool repeat);
+void nec16_button_callback(uint16_t address, uint8_t command, bool repeat);
 
 #ifdef __cplusplus
      }

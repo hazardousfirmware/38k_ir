@@ -68,3 +68,25 @@ void send_nec_ircode(uint8_t address, uint8_t cmd)
     pwm_off();
     internal_delay_us(40000);
 }
+
+void send_nec16_ircode(uint16_t address, uint8_t cmd)
+{
+    uint8_t addr_l = (uint8_t)address;
+    uint8_t addr_h = address >> 8;
+
+    // Send preamble
+    pwm_on();
+    internal_delay_us(9100);
+    pwm_off();
+    internal_delay_us(4500);
+
+    // Send data
+    write_octet(addr_l);
+    write_octet(addr_h);
+
+    write_octet(cmd);
+    write_octet(~cmd);
+
+    pwm_off();
+    internal_delay_us(40000);
+}

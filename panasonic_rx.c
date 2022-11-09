@@ -5,13 +5,15 @@ void __attribute__((weak)) panasonic_button_callback(uint16_t identifier, uint16
 }
 
 /*
+The Protocol: modified manchester encoding, modulated onto 38KHz carrier
+
 ===start===
 on for 3600us
-off for 1200 us
+off for 1200us
 
-===data=== (16bit identifier + 0x4004 + 16 bit code)
-state 0 = (720 - 880)us, low for 480us, high for 240us (440)
-state 1 = (1680-1760)us, low for 1200us, high for (480 to 560)us
+===data=== (16 bit identifier + 0x2002 + 16 bit code)
+bit 0 = low for ~440us + high for ~440us
+bit 1 = low for ~1200us + high for ~480us
 
 === end / between frames ===
 off for 73ms

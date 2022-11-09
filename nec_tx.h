@@ -8,9 +8,10 @@ extern "C" {
 #endif
 
 void send_nec_ircode(uint8_t address, uint8_t cmd);
+void send_nec16_ircode(uint16_t address, uint8_t cmd);
 void nec_register_functions(void (*pwm_on_function)(void),
-                                  void (*pwm_off_function)(void),
-                                  void (*delay_us_function)(unsigned int));
+                            void (*pwm_off_function)(void),
+                            void (*delay_us_function)(unsigned int));
 
 #ifdef __cplusplus
      }
