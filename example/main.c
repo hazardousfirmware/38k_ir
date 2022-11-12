@@ -1,8 +1,7 @@
 #include "nec_rx.h"
-#include "nec_tx.h"
 #include "hw.h"
-#include "panasonic_tx.h"
 #include "panasonic_rx.h"
+#include "samsung_rx.h"
 #include "ring.h"
 #include <stdint.h>
 #include <stdio.h>
@@ -36,6 +35,7 @@ int main(void)
             item = ring_get() * 10; // 10us has elapsed per tick
             necdecoder_decode_falling_edge(item);
             panasonic_decode_falling_edge(item);
+            samsung_decode_falling_edge(item);
             //printf("%lu\n", item);
         }
     }
@@ -54,6 +54,16 @@ void nec_button_callback(uint8_t address, uint8_t command, bool repeat)
 void panasonic_button_callback(uint16_t identifier, uint16_t command)
 {
     printf("Panasonic id=0x%04x, code=0x%04x\n", identifier, command);
+}
+
+void samsung_button_callback_1(uint16_t address, uint16_t command)
+{
+    printf("Samsung-1 addr=0x%04x, cmd=0x%04x\n", address, command);
+}
+
+void samsung_button_callback_2(uint32_t address, uint16_t command)
+{
+    printf("Samsung-2 address=0x%08lx, command=0x%04x\n", address, command);
 }
 
 

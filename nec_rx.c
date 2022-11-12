@@ -22,22 +22,22 @@ void __attribute__((weak)) nec16_button_callback(uint16_t address, uint8_t comma
 // First repeat is ~40ms since end of data
 // Subsequent repeat is ~97ms since end of last repeat
 
-enum decoder_state_machine_t
+typedef enum
 {
     STATE_IDLE,
     STATE_DATA,
     STATE_REPEAT,
-    STATE_LOCK1,
+    STATE_TYPE1_LOCK,
     STATE_LOCK2,
-};
+} decoder_state_machine_t;
 
 // Decoding state machine to process the infra-red signal and generate bits
-void necdecoder_decode_falling_edge(uint32_t current_timestamp)
+void necdecoder_decode_falling_edge(uint32_t timestamp)
 {
-    static enum decoder_state_machine_t state = STATE_IDLE;
+    static decoder_state_machine_t state = STATE_IDLE;
 
     static uint32_t last_timestamp = 0;
-    const uint32_t sinceLast = current_timestamp - last_timestamp;
+    const uint32_t sinceLast = timestamp - last_timestamp;
 
     static uint32_t bits = 0;
     static int count = 0;
@@ -62,11 +62,11 @@ void necdecoder_decode_falling_edge(uint32_t current_timestamp)
             state = STATE_DATA;
 
         }
-        last_timestamp = current_timestamp;
+        last_timestamp = timestamp;
     }
     else if (state == STATE_DATA)
     {
-        last_timestamp = current_timestamp;
+        last_timestamp = timestamp;
 
         if (sinceLast > 1000 && sinceLast < 1500)
         {
@@ -118,10 +118,10 @@ void necdecoder_decode_falling_edge(uint32_t current_timestamp)
             }
 
             // Lock the decoder until the repeat comes in
-            state = STATE_LOCK1;
+            state = STATE_TYPE1_LOCK;
         }
     }
-    else if (state == STATE_LOCK1)
+    else if (state == STATE_TYPE1_LOCK)
     {
         if (sinceLast < 39500)
         {
@@ -131,13 +131,13 @@ void necdecoder_decode_falling_edge(uint32_t current_timestamp)
         {
             // too long has elapsed, reset
             state = STATE_IDLE;
-            last_timestamp = current_timestamp;
+            last_timestamp = timestamp;
         }
         else
         {
             // Next interrupt should hopefully be in ~11.3ms, if so a repeat has occurred
             state = STATE_REPEAT;
-            last_timestamp = current_timestamp;
+            last_timestamp = timestamp;
         }
     }
     else if (state == STATE_REPEAT)
@@ -150,13 +150,13 @@ void necdecoder_decode_falling_edge(uint32_t current_timestamp)
         {
             // too long has elapsed, reset
             state = STATE_IDLE;
-            last_timestamp = current_timestamp;
+            last_timestamp = timestamp;
         }
         else
         {
             // Repeat has occurred, Next interrupt should hopefully be in ~108ms, if so a repeat has occurred
             state = STATE_LOCK2;
-            last_timestamp = current_timestamp;
+            last_timestamp = timestamp;
 
             // definitely a repeat command
             if (last_address > 255)
@@ -179,19 +179,19 @@ void necdecoder_decode_falling_edge(uint32_t current_timestamp)
         {
             // too long has elapsed, reset
             state = STATE_IDLE;
-            last_timestamp = current_timestamp;
+            last_timestamp = timestamp;
         }
         else
         {
             // Next interrupt should hopefully be in ~11.3ms, if so a repeat has occurred
             state = STATE_REPEAT;
-            last_timestamp = current_timestamp;
+            last_timestamp = timestamp;
         }
     }
     else
     {
         state = STATE_IDLE;
-        last_timestamp = current_timestamp;
+        last_timestamp = timestamp;
     }
 }
 

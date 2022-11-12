@@ -7,7 +7,7 @@ extern "C" {
 
 #include <stdint.h>
 
-void panasonic_decode_falling_edge(uint32_t current_timestamp);
+void panasonic_decode_falling_edge(uint32_t timestamp);
 void panasonic_button_callback(uint16_t identifier, uint16_t command);
 
 #ifdef __cplusplus

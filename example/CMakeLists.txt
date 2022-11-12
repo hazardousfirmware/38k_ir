@@ -46,6 +46,7 @@ add_executable(${GENERATED_BINARY}.elf
 target_link_libraries(${GENERATED_BINARY}.elf
     necrx
     panasonicrx
+    samsungrx
 )
 
 

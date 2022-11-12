@@ -13,3 +13,7 @@ add_library(panasonictx STATIC
 add_library(panasonicrx STATIC
     panasonic_rx.c
 )
+
+add_library(samsungrx STATIC
+    samsung_rx.c
+)

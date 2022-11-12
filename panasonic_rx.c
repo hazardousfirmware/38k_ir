@@ -30,12 +30,12 @@ typedef enum
 
 #define MIDDLE_CONSTANT (uint16_t)0x2002
 
-void panasonic_decode_falling_edge(uint32_t current_timestamp)
+void panasonic_decode_falling_edge(uint32_t timestamp)
 {
     static decoder_state_machine_t state = STATE_IDLE;
 
     static uint32_t last_timestamp = 0;
-    const uint32_t sinceLast = current_timestamp - last_timestamp;
+    const uint32_t sinceLast = timestamp - last_timestamp;
 
     static uint16_t cmd = 0;
     static uint16_t id = 0;
@@ -58,7 +58,7 @@ void panasonic_decode_falling_edge(uint32_t current_timestamp)
             state = STATE_MAGIC;
         }
 
-        last_timestamp = current_timestamp;
+        last_timestamp = timestamp;
     }
     else if (state == STATE_MAGIC)
     {
@@ -89,7 +89,7 @@ void panasonic_decode_falling_edge(uint32_t current_timestamp)
             cmd = 0;
         }
 
-        last_timestamp = current_timestamp;
+        last_timestamp = timestamp;
     }
     else if (state == STATE_ADDR)
     {
@@ -118,7 +118,7 @@ void panasonic_decode_falling_edge(uint32_t current_timestamp)
             count = 0;
         }
 
-        last_timestamp = current_timestamp;
+        last_timestamp = timestamp;
     }
     else if (state == STATE_DATA)
     {
@@ -151,7 +151,7 @@ void panasonic_decode_falling_edge(uint32_t current_timestamp)
             id = 0;
         }
 
-        last_timestamp = current_timestamp;
+        last_timestamp = timestamp;
     }
     else if (state == STATE_LOCK)
     {
@@ -159,12 +159,12 @@ void panasonic_decode_falling_edge(uint32_t current_timestamp)
         if (sinceLast > 73000)
         {
             state = STATE_IDLE;
-            last_timestamp = current_timestamp;
+            last_timestamp = timestamp;
         }
     }
     else
     {
         state = STATE_IDLE;
-        last_timestamp = current_timestamp;
+        last_timestamp = timestamp;
     }
 }
