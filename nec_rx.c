@@ -56,7 +56,7 @@ void necdecoder_decode_falling_edge(uint32_t timestamp)
         bits = 0x0;
         count = 0;
 
-        if (sinceLast >= 13300 && sinceLast <= 13700)
+        if (sinceLast >= 13200 && sinceLast <= 13700)
         {
             // preamble detected, next interrupt should be data bits
             state = STATE_DATA;
@@ -127,7 +127,7 @@ void necdecoder_decode_falling_edge(uint32_t timestamp)
         {
             // It is considered spurious and ignored
         }
-        else if (sinceLast > 40500)
+        else if (sinceLast > 41000)
         {
             // too long has elapsed, reset
             state = STATE_IDLE;

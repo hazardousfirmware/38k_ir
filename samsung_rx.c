@@ -43,6 +43,8 @@ void samsung_decode_falling_edge(uint32_t timestamp)
     static uint8_t bits = 0;
     static int count = 0;
 
+    //printf("%08lu\n", timestamp);
+
     if (sinceLast < 800)
     {
         // Its something stupid, don't even bother
@@ -55,7 +57,7 @@ void samsung_decode_falling_edge(uint32_t timestamp)
         count = 0;
         memset(bytes, 0, sizeof(bytes));
 
-        if (sinceLast >= 13300 && sinceLast <= 13700)
+        if (sinceLast >= 13200 && sinceLast <= 13600)
         {
             // variant 2 protocol preamble detected, next interrupt should be data bits
             state = STATE_TYPE2_DATA;
@@ -91,7 +93,7 @@ void samsung_decode_falling_edge(uint32_t timestamp)
     else if (state == STATE_TYPE2_LOCK)
     {
         // block from handling falling edge for at least 23us
-        if (sinceLast > 22000)
+        if (sinceLast > 22600)
         {
             state = STATE_IDLE;
             last_timestamp = timestamp;
@@ -145,7 +147,5 @@ void samsung_decode_falling_edge(uint32_t timestamp)
 
         // Lock the decoder until repeat comes in
         state = STATE_TYPE2_LOCK;
-
-        //TODO: fix repeated commands
     }
 }
