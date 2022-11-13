@@ -137,7 +137,7 @@ void necdecoder_decode_falling_edge(uint32_t timestamp)
     }
     else if (state == STATE_REPEAT)
     {
-        if (sinceLast < 11000)
+        if (sinceLast < 10950)
         {
             // It is considered spurious and ignored
         }
@@ -166,7 +166,7 @@ void necdecoder_decode_falling_edge(uint32_t timestamp)
     }
     else if (state == STATE_LOCK2)
     {
-        if (sinceLast < 96000)
+        if (sinceLast < 95000)
         {
             // It is considered spurious and ignored
         }

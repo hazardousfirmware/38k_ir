@@ -1,8 +1,6 @@
 #include "panasonic_rx.h"
 
-void __attribute__((weak)) panasonic_button_callback(uint16_t identifier, uint16_t command)
-{
-}
+void __attribute__((weak)) panasonic_button_callback(uint16_t identifier, uint16_t command){}
 
 /*
 The Protocol: pulse distance encoding, modulated onto 38KHz carrier

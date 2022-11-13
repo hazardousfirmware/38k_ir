@@ -42,12 +42,12 @@ int main(void)
 
 void nec16_button_callback(uint16_t address, uint8_t command, bool repeat)
 {
-    printf("NEC-ext: addr=%04x, cmd=%02x\n", address, command);
+    printf("NEC-ext: addr=0x%04x, cmd=0x%02x\n", address, command);
 }
 
 void nec_button_callback(uint8_t address, uint8_t command, bool repeat)
 {
-    printf("NEC: addr=%02x, cmd=%02x\n", address, command);
+    printf("NEC: addr=0x%02x, cmd=0x%02x\n", address, command);
 }
 
 void panasonic_button_callback(uint16_t identifier, uint16_t command)
