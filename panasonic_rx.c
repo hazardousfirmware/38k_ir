@@ -156,7 +156,7 @@ void panasonic_decode_falling_edge(uint32_t timestamp)
     else if (state == STATE_LOCK)
     {
         // block from handling falling edge for at least 73us
-        if (sinceLast > 73000)
+        if (sinceLast > 72700)
         {
             state = STATE_IDLE;
             last_timestamp = timestamp;

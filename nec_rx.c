@@ -1,13 +1,8 @@
 #include "nec_rx.h"
 #include <stddef.h>
 
-void __attribute__((weak)) nec_button_callback(uint8_t address, uint8_t command, bool repeat) 
-{
-}
-
-void __attribute__((weak)) nec16_button_callback(uint16_t address, uint8_t command, bool repeat)
-{
-}
+void __attribute__((weak)) nec_button_callback(uint8_t address, uint8_t command, bool repeat){}
+void __attribute__((weak)) nec16_button_callback(uint16_t address, uint8_t command, bool repeat){}
 
 // NEC Infra-red remote protocol
 // https://techdocs.altium.com/display/FPGA/NEC+Infrared+Transmission+Protocol
@@ -127,7 +122,7 @@ void necdecoder_decode_falling_edge(uint32_t timestamp)
         {
             // It is considered spurious and ignored
         }
-        else if (sinceLast > 41000)
+        else if (sinceLast > 46000)
         {
             // too long has elapsed, reset
             state = STATE_IDLE;
@@ -175,7 +170,7 @@ void necdecoder_decode_falling_edge(uint32_t timestamp)
         {
             // It is considered spurious and ignored
         }
-        else if (sinceLast > 98000)
+        else if (sinceLast > 100900)
         {
             // too long has elapsed, reset
             state = STATE_IDLE;
@@ -186,7 +181,6 @@ void necdecoder_decode_falling_edge(uint32_t timestamp)
             // Next interrupt should hopefully be in ~11.3ms, if so a repeat has occurred
             state = STATE_REPEAT;
             last_timestamp = timestamp;
-            // TODO: extended mode repeats are not working
         }
     }
     else

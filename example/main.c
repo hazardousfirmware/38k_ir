@@ -36,34 +36,33 @@ int main(void)
             necdecoder_decode_falling_edge(item);
             panasonic_decode_falling_edge(item);
             samsung_decode_falling_edge(item);
-            //printf("%lu\n", item);
         }
     }
 }
 
 void nec16_button_callback(uint16_t address, uint8_t command, bool repeat)
 {
-    printf("NEC-16, addr=%04x, cmd=%02x\n", address, command);
+    printf("NEC-ext: addr=%04x, cmd=%02x\n", address, command);
 }
 
 void nec_button_callback(uint8_t address, uint8_t command, bool repeat)
 {
-    printf("NEC, addr=%02x, cmd=%02x\n", address, command);
+    printf("NEC: addr=%02x, cmd=%02x\n", address, command);
 }
 
 void panasonic_button_callback(uint16_t identifier, uint16_t command)
 {
-    printf("Panasonic id=0x%04x, code=0x%04x\n", identifier, command);
+    printf("Panasonic: id=0x%04x, code=0x%04x\n", identifier, command);
 }
 
 void samsung_button_callback_1(uint16_t address, uint16_t command)
 {
-    printf("Samsung-1 addr=0x%04x, cmd=0x%04x\n", address, command);
+    printf("Samsung-1: addr=0x%04x, cmd=0x%04x\n", address, command);
 }
 
 void samsung_button_callback_2(uint32_t address, uint16_t command, uint8_t extra)
 {
-    printf("Samsung-2 address=0x%08lx, command=0x%04x, extra=0x%01x\n", address, command, extra);
+    printf("Samsung-2: addr=0x%08lx, cmd=0x%04x, extra=0x%01x\n", address, command, extra);
 }
 
 
