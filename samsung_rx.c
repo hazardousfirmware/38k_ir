@@ -1,7 +1,8 @@
 #include "samsung_rx.h"
+#include <string.h>
 
 void __attribute__((weak)) samsung_button_callback_1(uint16_t address, uint16_t command){}
-void __attribute__((weak)) samsung_button_callback_2(uint32_t address, uint16_t command){}
+void __attribute__((weak)) samsung_button_callback_2(uint32_t address, uint16_t command, uint8_t extra){}
 
 /*
 Samsung IR Protocol
@@ -14,7 +15,7 @@ Type 1: (DVD)
 - ~46.73ms between repeats (46.14 excl stop bit)
 
 Type 2: (TV)
-- 42 bits data (26 bits address + 16 bits command)
+- 42 bits data (24 bits address + 16 bits command + 2 extra bits (possibly CRC) )
 - No repeat pulse, instead entire frame is repeated
 - ~22.97ms between repeats (22.44 excl stop bit)
 */
@@ -24,8 +25,7 @@ typedef enum
 {
     STATE_IDLE,
     STATE_TYPE1_DATA,
-    STATE_TYPE2_DATA1,
-    STATE_TYPE2_DATA2,
+    STATE_TYPE2_DATA,
     STATE_TYPE1_LOCK,
     STATE_TYPE2_LOCK,
 } decoder_state_machine_t;
@@ -38,8 +38,9 @@ void samsung_decode_falling_edge(uint32_t timestamp)
     static uint32_t last_timestamp = 0;
     const uint32_t sinceLast = timestamp - last_timestamp;
 
-    static uint32_t bits = 0;
-    static uint32_t data1 = 0;
+    static uint8_t bytes[6] = {0}; // Type 2 has 42 bits of data
+
+    static uint8_t bits = 0;
     static int count = 0;
 
     if (sinceLast < 800)
@@ -52,54 +53,54 @@ void samsung_decode_falling_edge(uint32_t timestamp)
     {
         bits = 0x0;
         count = 0;
-        data1 = 0;
+        memset(bytes, 0, sizeof(bytes));
 
         if (sinceLast >= 13300 && sinceLast <= 13700)
         {
             // variant 2 protocol preamble detected, next interrupt should be data bits
-            state = STATE_TYPE2_DATA1;
+            state = STATE_TYPE2_DATA;
         }
-        else if (sinceLast >= 8900 && sinceLast <= 9100)
+        else if (sinceLast >= 8850 && sinceLast <= 9150)
         {
             // variant 1 protocol preamble detected, next interrupt should be data bits
             state = STATE_TYPE1_DATA;
         }
         last_timestamp = timestamp;
     }
-    else if (state == STATE_TYPE1_DATA || state == STATE_TYPE2_DATA1 || state == STATE_TYPE2_DATA2)
+    else if (state == STATE_TYPE1_DATA || state == STATE_TYPE2_DATA)
     {
+        last_timestamp = timestamp;
         if (sinceLast > 1000 && sinceLast < 1500)
         {
             // bit 0 detected
-            bits &= ~(1lu << count);
+            // bits &= ~(1 << (count & 0x07));
             count++;
         }
         else if (sinceLast > 2000 && sinceLast < 2500)
         {
             // bit 1 detected
-            bits |= (1lu << count);
+            bits |= (1 << (count & 0x07));
             count++;
         }
         else
         {
             state = STATE_IDLE;
-            count = 0;
+            return;
         }
-        last_timestamp = timestamp;
     }
-    else if (state == STATE_TYPE1_LOCK)
+    else if (state == STATE_TYPE2_LOCK)
     {
         // block from handling falling edge for at least 23us
-        if (sinceLast > 22400)
+        if (sinceLast > 22000)
         {
             state = STATE_IDLE;
             last_timestamp = timestamp;
         }
     }
-    else if (state == STATE_TYPE2_LOCK)
+    else if (state == STATE_TYPE1_LOCK)
     {
         // block from handling falling edge for at least 46us
-        if (sinceLast > 46100)
+        if (sinceLast > 46600)
         {
             state = STATE_IDLE;
             last_timestamp = timestamp;
@@ -109,13 +110,22 @@ void samsung_decode_falling_edge(uint32_t timestamp)
     {
         state = STATE_IDLE;
         last_timestamp = timestamp;
+        return;
+    }
+
+    if ((count & 0x07) == 0x00 && count > 0)
+    {
+        // Multiple of 8 bits
+        int index = (count >> 3) - 1; // index = (count / 8) - 1
+        bytes[index] = bits;
+        bits = 0;
     }
 
     if (state == STATE_TYPE1_DATA && count == 32)
     {
         // All bits received
-        uint16_t addr = bits & 0xffff;
-        uint16_t cmd = bits >> 16;
+        uint16_t addr = bytes[0] << 8 | bytes[1];
+        uint16_t cmd = bytes[2] << 8 | bytes[3];
         
         samsung_button_callback_1(addr, cmd);
 
@@ -123,26 +133,19 @@ void samsung_decode_falling_edge(uint32_t timestamp)
         state = STATE_TYPE1_LOCK;
     }
 
-    if (state == STATE_TYPE2_DATA1 && count == 32)
+    if (state == STATE_TYPE2_DATA && count == 42)
     {
-        data1 = bits;
-        state = STATE_TYPE2_DATA2;
-        count = 0;
-        bits = 0;
-    }
+        bytes[5] = bits << 6;
 
-    if (state == STATE_TYPE2_DATA2 && count == 10)
-    {
-        uint16_t data2 = bits << 6;
-        bits |= (data1 >> 26);
+        uint32_t address = bytes[0] | (bytes[1] << 8) | ((uint32_t)bytes[2] << 16);
+        uint16_t cmd = bytes[3] | (bytes[4] << 8);
+        uint8_t extra = bytes[5] >> 6;
 
-        data1 &= 0x3FFFFFF;
-        samsung_button_callback_2(data1, data2);
-        count = 0;
-        bits = 0;
+        samsung_button_callback_2(address, cmd, extra);
+
+        // Lock the decoder until repeat comes in
         state = STATE_TYPE2_LOCK;
+
+        //TODO: fix repeated commands
     }
-
-    //TODO: fix type 1 and repeated commands
-
 }

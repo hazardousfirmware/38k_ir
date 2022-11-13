@@ -11,7 +11,7 @@ void __attribute__((weak)) nec16_button_callback(uint16_t address, uint8_t comma
 
 // NEC Infra-red remote protocol
 // https://techdocs.altium.com/display/FPGA/NEC+Infrared+Transmission+Protocol
-// Line code:
+// Line code: pulse distance encoding, modulated onto 38KHz carrier
 // preamble: ~13600us (9.1ms pulse + 4.5ms space)
 // bit 0: ~1125us (562us pulse, 562us space)
 // bit 1: ~2250us (562us pulse, 1687us space)
@@ -71,7 +71,7 @@ void necdecoder_decode_falling_edge(uint32_t timestamp)
         if (sinceLast > 1000 && sinceLast < 1500)
         {
             // bit 0 detected
-            bits &= ~(1lu << count);
+            //bits &= ~(1lu << count);
             count++;
         }
         else if (sinceLast > 2000 && sinceLast < 2500)
@@ -186,6 +186,7 @@ void necdecoder_decode_falling_edge(uint32_t timestamp)
             // Next interrupt should hopefully be in ~11.3ms, if so a repeat has occurred
             state = STATE_REPEAT;
             last_timestamp = timestamp;
+            // TODO: extended mode repeats are not working
         }
     }
     else

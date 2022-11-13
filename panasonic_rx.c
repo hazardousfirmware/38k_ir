@@ -5,7 +5,7 @@ void __attribute__((weak)) panasonic_button_callback(uint16_t identifier, uint16
 }
 
 /*
-The Protocol: modified manchester encoding, modulated onto 38KHz carrier
+The Protocol: pulse distance encoding, modulated onto 38KHz carrier
 
 ===start===
 on for 3600us

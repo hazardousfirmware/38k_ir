@@ -86,7 +86,7 @@ int main()
     if (result_id != expect_id || result_cmd != expect_cmd)
     {
         printf("FAIL\n");
-        abort();
+        return 1;
     }
 
     printf("\n\n");
@@ -113,7 +113,7 @@ int main()
     if (result_id != expect_id || result_cmd != expect_cmd)
     {
         printf("FAIL\n");
-        abort();
+        return 1;
     }
     printf("\n\n");
     microseconds += 20000; // sufficiently long time after first "button press" so it resets and doesn't expect a repeat
@@ -138,7 +138,7 @@ int main()
     if (result_id != expect_id || result_cmd != expect_cmd)
     {
         printf("FAIL\n");
-        abort();
+        return 1;
     }
 
     return 0;

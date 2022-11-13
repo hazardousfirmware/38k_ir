@@ -2,8 +2,13 @@
 #include <stdint.h>
 #include "panasonic_rx.h"
 
+uint16_t result_id;
+uint16_t result_cmd;
+
 void panasonic_button_callback(uint16_t identifier, uint16_t command)
 {
+    result_id = identifier;
+    result_cmd = command;
     printf("callback, identifier=0x%04x, command=0x%04x\n", identifier, command);
 }
 
@@ -68,6 +73,11 @@ int main()
     {
         panasonic_decode_falling_edge(timestamps[i]);
     }
+    if (result_id != 0x00a0 || result_cmd != 0x8121)
+    {
+        printf("Fail: expected id=%04x, cmd=%04x, actual id=%04x, cmd=%04x\n", 0x00a0, 0x8121, result_id, result_cmd);
+        return 1;
+    }
 
 
     printf("timestamps2:\n");
@@ -128,7 +138,11 @@ int main()
     {
         panasonic_decode_falling_edge(timestamps2[i]);
     }
-
+    if (result_id != 0x0080 || result_cmd != 0xa020)
+    {
+        printf("Fail: expected id=%04x, cmd=%04x, actual id=%04x, cmd=%04x\n", 0x0080, 0xa020, result_id, result_cmd);
+        return 1;
+    }
 
     printf("timestamps3:\n");
     uint32_t timestamps3[] = {
@@ -187,6 +201,11 @@ int main()
     for (int i = 0; i < sizeof(timestamps3) / sizeof(uint32_t); i++)
     {
         panasonic_decode_falling_edge(timestamps3[i]);
+    }
+    if (result_id != 0x00b0 || result_cmd != 0x3282)
+    {
+        printf("Fail: expected id=%04x, cmd=%04x, actual id=%04x, cmd=%04x\n", 0x00b0, 0x3282, result_id, result_cmd);
+        return 1;
     }
 
     return 0;

@@ -61,9 +61,9 @@ void samsung_button_callback_1(uint16_t address, uint16_t command)
     printf("Samsung-1 addr=0x%04x, cmd=0x%04x\n", address, command);
 }
 
-void samsung_button_callback_2(uint32_t address, uint16_t command)
+void samsung_button_callback_2(uint32_t address, uint16_t command, uint8_t extra)
 {
-    printf("Samsung-2 address=0x%08lx, command=0x%04x\n", address, command);
+    printf("Samsung-2 address=0x%08lx, command=0x%04x, extra=0x%01x\n", address, command, extra);
 }
 
 

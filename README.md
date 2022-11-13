@@ -10,6 +10,7 @@ NOTE: NEC Protocol is the most common and used by most vendors
 ## Supported protocols
 - NEC (standard 8 bit and extended 16 bit address) (Encode and Decode)
 - Panasonic (Encode and Decode)
+- Samsung (32 and 42 bit variants)
 
 ## Hardware prerequisites
 - GPIO output pin with 38KHz PWM (to infrared LED, driver transistor is recommended)
@@ -43,6 +44,10 @@ NOTE: NEC Protocol is the most common and used by most vendors
 1. call `panasonic_register_functions` and provide pointers to hardware specific functions for enabling PWM, disabling PWM, microsecond delay
 1. call `send_panasonic_ircode` with 16 bit id and code to transmit
 
+### Decoding Samsung protocol
+1. implement function `void samsung_button_callback_1(uint16_t address, uint16_t command)` to handle button events for 32 bit type
+1. implement function `void samsung_button_callback_2(uint32_t address, uint16_t command, uint8_t extra)` to handle button events for 42 bit type
+1. call `samsung_decode_falling_edge(uint32_t timestamp)` with timestamp from systick counter for every falling edge interrupt on the IR sensor pin
 
 ## Gotchas
 - The decoding code might be slow in an IRQ, use a queue or ring buffer to hold interrupt events
@@ -60,3 +65,15 @@ make
 ```
 
 To load onto the board avrdude, run `make load`
+
+## Tests
+To run tests:
+
+```sh
+cd test
+mkdir -p build
+cd build
+cmake ..
+make
+make test
+```
